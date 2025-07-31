@@ -1,26 +1,22 @@
-name: RDP with Cloudflare
+name: RDP via Serveo
 
 on: [workflow_dispatch]
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-      - name: Download cloudflared
-        run: |
-          Invoke-WebRequest -Uri https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -OutFile cloudflared.exe
-
-      - name: Add RDP user
+      - name: Create RDP user & enable RDP
         run: |
           net user kamel123 MyStrong123 /add
           net localgroup administrators kamel123 /add
           Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: Start Cloudflare Tunnel
-        env:
-          TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
+      - name: Open Serveo Tunnel for RDP
+        shell: powershell
         run: |
-          Start-Process .\cloudflared.exe "tunnel --no-autoupdate run --token $env:TUNNEL_TOKEN"
-          Start-Sleep -Seconds 15
+          # This asks Serveo for a public port and forwards it to your 3389
+          $out = ssh -o StrictHostKeyChecking=no -R 0:0.0.0.0:3389:localhost:3389 serveo.net 2>&1
+          Write-Host $out
+          Start-Sleep -Seconds 21600   # keep tunnel alive up to 6 hrs
