@@ -10,13 +10,14 @@ jobs:
         run: |
           net user kamel123 MyStrong123 /add
           net localgroup administrators kamel123 /add
-          Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
+          Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" `
+            -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
       - name: Open Serveo Tunnel for RDP
         shell: powershell
         run: |
-          # This asks Serveo for a public port and forwards it to your 3389
-          $out = ssh -o StrictHostKeyChecking=no -R 0:localhost:3389 serveo.net 2>&1
-          Write-Host $out
-          Start-Sleep -Seconds 21600   # keep tunnel alive up to 6 hrs
+          # -T disables pseudo-terminal allocation
+          # -N tells SSH not to run any remote commands (just port forwarding)
+          ssh -T -N -o StrictHostKeyChecking=no -R 0:localhost:3389 serveo.net
+          
