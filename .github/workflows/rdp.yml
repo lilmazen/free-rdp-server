@@ -1,4 +1,4 @@
-name: RDP
+name: RDP with Cloudflare
 
 on: [workflow_dispatch]
 
@@ -7,24 +7,20 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Download ngrok
+      - name: Download cloudflared
         run: |
-          Invoke-WebRequest -Uri https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
-          Expand-Archive ngrok.zip -DestinationPath .
+          Invoke-WebRequest -Uri https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -OutFile cloudflared.exe
 
-      - name: Configure ngrok authtoken
-        run: .\ngrok.exe authtoken 2q9Rg1TkbALXX3Iq6UPlwPx7ryM_5zUgNxU55UNHLVUZWQL7r
-
-      - name: Create user and enable RDP
+      - name: Add RDP user
         run: |
           net user kamel123 MyStrong123 /add
           net localgroup administrators kamel123 /add
           Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-      - name: Start ngrok and print public address
-        shell: powershell
+      - name: Start Cloudflare Tunnel
+        env:
+          TUNNEL_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
         run: |
-          Start-Process .\ngrok.exe -ArgumentList "tcp 3389" -NoNewWindow
-          Start-Sleep -Seconds 10
-          Invoke-RestMethod -Uri http://127.0.0.1:4040/api/tunnels
+          Start-Process .\cloudflared.exe "tunnel --no-autoupdate run --token $env:TUNNEL_TOKEN"
+          Start-Sleep -Seconds 15
