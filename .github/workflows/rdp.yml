@@ -17,6 +17,6 @@ jobs:
         shell: powershell
         run: |
           # This asks Serveo for a public port and forwards it to your 3389
-          $out = ssh -o StrictHostKeyChecking=no -R 0:0.0.0.0:3389:localhost:3389 serveo.net 2>&1
+          $out = ssh -o StrictHostKeyChecking=no -R 0:localhost:3389 serveo.net 2>&1
           Write-Host $out
           Start-Sleep -Seconds 21600   # keep tunnel alive up to 6 hrs
