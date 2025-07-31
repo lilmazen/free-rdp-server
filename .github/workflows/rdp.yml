@@ -10,8 +10,8 @@ jobs:
     steps:
     - name: Enable RDP Access
       run: |
-        net user runneradmin MyStrongPassword123 /add
-        net localgroup administrators runneradmin /add
+        net user runneradmin MyStrongPasswords123 /add
+        net localgroup administrators runneradmins /add
         Enable-ComputerRestore -Drive "C:\"
         vssadmin resize shadowstorage /for=C: /on=C: /MaxSize=10%
         Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
